@@ -39,7 +39,7 @@ st.markdown("Prototype Pipeline: Centralizing and annotating cross-channel feedb
 # ==========================================
 st.sidebar.header("📥 Ingestion Channels")
 
-demo_products = ["Mobile App", "Web Dashboard", "Wireless Earbuds", "Payment Gateway"]
+demo_products = ["Mobile App", "Wireless Earbuds", "Web Dashboard", "Payment Gateway"]
 
 # Channel A: Live Web Form with Product Selection
 with st.sidebar.form(key='live_feedback'):
@@ -60,7 +60,7 @@ with st.sidebar.form(key='live_feedback'):
             "Indicator": icon
         }])
         st.session_state.feedback_db = pd.concat([new_entry, st.session_state.feedback_db], ignore_index=True)
-        st.sidebar.success("Event ingested successfully.")
+        st.sidebar.success(f"Event ingested for {product_sel}.")
 
 # Channel B: Simulated High-Velocity Stream with Explicit Negative Events
 st.sidebar.markdown("---")
@@ -73,7 +73,7 @@ if st.sidebar.button("🌊 Simulate Batch Stream"):
         {"Product": "Wireless Earbuds", "Channel": "Support Logs", "Text": "Awful battery life, completely useless. Highly disappointed."}
     ]
     with st.spinner('Processing batch through annotation engine...'):
-        time.sleep(1) # Simulating network/processing latency
+        time.sleep(1)
         for item in batch_data:
             sentiment, icon = annotate_sentiment(item["Text"])
             new_entry = pd.DataFrame([{
@@ -87,39 +87,43 @@ if st.sidebar.button("🌊 Simulate Batch Stream"):
             st.session_state.feedback_db = pd.concat([new_entry, st.session_state.feedback_db], ignore_index=True)
 
 # ==========================================
-# MODULE 3: UNIFIED VISUALIZATION & FILTERING
+# MODULE 3: UNIFIED VISUALIZATION & TABS
 # ==========================================
 if not st.session_state.feedback_db.empty:
+    st.subheader("📊 Product-Specific Analytics")
     
-    # --- PRODUCT FILTER DRIVER ---
-    st.subheader("🔍 Filter by Product")
-    all_products = ["All Products"] + list(st.session_state.feedback_db['Product'].unique())
-    selected_filter = st.selectbox("Select a product to view specific analytics:", all_products)
+    # Get all unique products currently in the database
+    unique_products = list(st.session_state.feedback_db['Product'].unique())
     
-    # Apply the filter to a display dataframe
-    if selected_filter == "All Products":
+    # Create tabs dynamically based on the products present
+    tabs = st.tabs(["Overview (All Products)"] + unique_products)
+    
+    # --- TAB 0: OVERVIEW (ALL PRODUCTS) ---
+    with tabs[0]:
         display_db = st.session_state.feedback_db
-    else:
-        display_db = st.session_state.feedback_db[st.session_state.feedback_db['Product'] == selected_filter]
-    
-    st.markdown("---")
-    
-    # Metrics based on filtered data
-    col1, col2, col3 = st.columns(3)
-    col1.metric(f"Total Events ({selected_filter})", len(display_db))
-    col2.metric("Positive Events", len(display_db[display_db['Sentiment'] == 'Positive']))
-    col3.metric("Negative Events", len(display_db[display_db['Sentiment'] == 'Negative']))
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Events (Global)", len(display_db))
+        col2.metric("Positive Events", len(display_db[display_db['Sentiment'] == 'Positive']))
+        col3.metric("Negative Events", len(display_db[display_db['Sentiment'] == 'Negative']))
 
-    # Chart based on filtered data
-    st.subheader(f"📊 Sentiment Distribution: {selected_filter}")
-    if not display_db.empty:
         chart_data = display_db.groupby(['Channel', 'Sentiment']).size().unstack(fill_value=0)
         st.bar_chart(chart_data)
-    else:
-        st.info("No data available for this specific product.")
+        st.dataframe(display_db, use_container_width=True)
 
-    # Table based on filtered data
-    st.subheader("🗄️ Unified Event Store (Annotated)")
-    st.dataframe(display_db, use_container_width=True)
+    # --- TABS 1 to N: INDIVIDUAL PRODUCTS ---
+    for i, prod in enumerate(unique_products, start=1):
+        with tabs[i]:
+            # Filter database for just this specific product
+            prod_db = st.session_state.feedback_db[st.session_state.feedback_db['Product'] == prod]
+            
+            c1, c2, c3 = st.columns(3)
+            c1.metric(f"Total Events ({prod})", len(prod_db))
+            c2.metric("Positive Events", len(prod_db[prod_db['Sentiment'] == 'Positive']))
+            c3.metric("Negative Events", len(prod_db[prod_db['Sentiment'] == 'Negative']))
+            
+            if not prod_db.empty:
+                chart_data = prod_db.groupby(['Channel', 'Sentiment']).size().unstack(fill_value=0)
+                st.bar_chart(chart_data)
+                st.dataframe(prod_db, use_container_width=True)
 else:
     st.info("Pipeline idle. Awaiting data ingestion from sidebar.")
