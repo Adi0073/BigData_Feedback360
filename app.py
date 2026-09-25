@@ -5,103 +5,94 @@ import time
 from datetime import datetime
 
 # ==========================================
-# PAGE CONFIGURATION & ARGON CSS THEME
+# PAGE CONFIGURATION & STABLE CSS
 # ==========================================
 st.set_page_config(page_title="Feedback360 Dashboard", layout="wide", initial_sidebar_state="expanded")
 
-# Injecting Argon Dashboard CSS styles[cite: 6]
+# Rock-solid Flexbox CSS to prevent overlap and text crushing
 st.markdown("""
 <style>
-    /* Reset background to light gray and hide default top padding */
+    /* Main Background */
     .stApp { background-color: #f8f9fe; }
-    .block-container { padding-top: 2rem !important; max-width: 95% !important; }
     
-    /* The Purple Gradient Header Background */
-    .stApp::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 350px;
-        background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%) !important;
-        z-index: 0;
+    /* Stable Purple Header Container */
+    .purple-header {
+        background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
+        padding: 3rem 2rem 5rem 2rem;
+        border-radius: 0 0 1rem 1rem;
+        margin-top: -4rem; 
+        color: white;
     }
+    
+    .header-title { font-size: 2rem; font-weight: 600; margin-bottom: 0; }
+    .header-sub { font-size: 1rem; opacity: 0.8; margin-top: 0; }
 
-    /* Style the Sidebar to match */
-    [data-testid="stSidebar"] {
-        background-color: #ffffff;
-        box-shadow: 0 0 2rem 0 rgba(136,152,170,.15);
-        border-right: 1px solid #e9ecef;
-    }
-
-    /* Argon KPI Card Styling */
+    /* Flexbox KPI Cards - Prevents overlap */
     .argon-card {
         background-color: #ffffff;
-        border-radius: 0.375rem;
-        box-shadow: 0 0 2rem 0 rgba(136,152,170,.15);
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
         padding: 1.5rem;
-        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: -3rem; /* Floats over the purple header */
         margin-bottom: 2rem;
-        z-index: 1;
+        border: 1px solid #e9ecef;
     }
+    
+    .argon-text-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+    
     .argon-title {
         color: #8898aa;
-        font-family: sans-serif;
-        font-size: 0.8125rem;
-        font-weight: 600;
+        font-size: 0.8rem;
+        font-weight: 700;
         text-transform: uppercase;
-        margin-bottom: 0.5rem;
+        white-space: nowrap;
     }
+    
     .argon-value {
         color: #32325d;
-        font-size: 2rem;
-        font-weight: 600;
-        font-family: sans-serif;
-        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+        line-height: 1.2;
     }
+    
     .argon-icon {
         width: 3rem;
         height: 3rem;
         border-radius: 50%;
-        display: inline-flex;
+        display: flex;
         align-items: center;
         justify-content: center;
-        color: #ffffff;
-        font-size: 1.5rem;
-        position: absolute;
-        top: 1.5rem;
-        right: 1.5rem;
-        box-shadow: 0 0 2rem 0 rgba(136,152,170,.15);
-    }
-    /* Icon Colors */
-    .bg-danger { background: linear-gradient(87deg, #f5365c 0, #f56036 100%); }
-    .bg-warning { background: linear-gradient(87deg, #fb6340 0, #fbb140 100%); }
-    .bg-success { background: linear-gradient(87deg, #2dce89 0, #2dcecc 100%); }
-    .bg-info { background: linear-gradient(87deg, #11cdef 0, #1171ef 100%); }
-    
-    /* Header Text above cards */
-    .dashboard-header {
         color: white;
-        font-family: sans-serif;
-        font-weight: 600;
-        font-size: 1.5rem;
-        margin-bottom: 2rem;
-        position: relative;
-        z-index: 1;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11);
+        flex-shrink: 0;
     }
+    
+    .bg-danger { background: linear-gradient(87deg, #f5365c, #f56036); }
+    .bg-success { background: linear-gradient(87deg, #2dce89, #2dcecc); }
+    .bg-warning { background: linear-gradient(87deg, #fb6340, #fbb140); }
+    .bg-info { background: linear-gradient(87deg, #11cdef, #1171ef); }
 </style>
 """, unsafe_allow_html=True)
 
-# Helper function to generate Argon HTML cards
+# Helper function to generate stable HTML cards
 def render_argon_card(title, value, icon, bg_color):
     html = f"""
     <div class="argon-card">
-        <div class="argon-title">{title}</div>
-        <div class="argon-value">{value}</div>
+        <div class="argon-text-wrapper">
+            <span class="argon-title">{title}</span>
+            <span class="argon-value">{value}</span>
+        </div>
         <div class="argon-icon {bg_color}">{icon}</div>
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
-
 
 # ==========================================
 # MODULE 1: NLP ANNOTATION ENGINE
@@ -120,21 +111,16 @@ if 'feedback_db' not in st.session_state:
 # ==========================================
 # MODULE 2: DATA INGESTION & SIDEBAR
 # ==========================================
-# Header Title over the purple background
-st.markdown('<div class="dashboard-header">Feedback360 Analytics Engine</div>', unsafe_allow_html=True)
-
-st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Bootstrap_logo.svg/256px-Bootstrap_logo.svg.png", width=50)
-st.sidebar.markdown("### Data Controls")
+st.sidebar.markdown("### 🎛️ Data Controls")
 
 demo_products = ["Mobile App", "Wireless Earbuds", "Web Dashboard", "Payment Gateway"]
 
-# Global Filter moved to sidebar
 st.sidebar.markdown("#### 🔍 Filter View")
 selected_filter = st.sidebar.selectbox("Select Dashboard Scope", ["All Products"] + demo_products)
 st.sidebar.markdown("---")
 
 with st.sidebar.form(key='live_feedback'):
-    st.markdown("##### Manual Event Entry")
+    st.markdown("##### 📝 Manual Event Entry")
     product_sel = st.selectbox("Product", demo_products)
     channel_sel = st.selectbox("Channel", ["In-Person Survey", "Support Logs", "Social Media"])
     live_text = st.text_area("Feedback Payload:")
@@ -171,7 +157,15 @@ if st.sidebar.button("🌊 Inject Kafka Batch Stream", use_container_width=True)
 # ==========================================
 # MODULE 3: UNIFIED VISUALIZATION
 # ==========================================
-# Apply global filter logic
+# 1. Render the Purple Header Block
+st.markdown("""
+<div class="purple-header">
+    <div class="header-title">Feedback360 Analytics Engine</div>
+    <div class="header-sub">Prototype Pipeline: Cross-channel feedback centralizer</div>
+</div>
+""", unsafe_allow_html=True)
+
+# Apply global filter
 if selected_filter == "All Products":
     display_db = st.session_state.feedback_db
 else:
@@ -179,46 +173,41 @@ else:
 
 if not display_db.empty:
     
-    # 4 Argon KPI Cards (matching the image)
+    # 2. Render Floating KPI Cards
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        render_argon_card("Total Traffic", len(display_db), "📈", "bg-danger")
+        render_argon_card("Traffic", len(display_db), "📈", "bg-danger")
     with col2:
         pos_count = len(display_db[display_db['Sentiment'] == 'Positive'])
-        render_argon_card("Positive Feedback", pos_count, "👍", "bg-success")
+        render_argon_card("Positive", pos_count, "👍", "bg-success")
     with col3:
         neg_count = len(display_db[display_db['Sentiment'] == 'Negative'])
-        render_argon_card("Negative Feedback", neg_count, "👎", "bg-warning")
+        render_argon_card("Negative", neg_count, "👎", "bg-warning")
     with col4:
         neu_count = len(display_db[display_db['Sentiment'] == 'Neutral'])
-        render_argon_card("Neutral Mentions", neu_count, "💬", "bg-info")
+        render_argon_card("Neutral", neu_count, "💬", "bg-info")
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Charts Section
-    c1, c2 = st.columns([2, 1])
-    
+    # 3. Charts Section (Replaced empty time chart with Overall Sentiment Profile)
+    c1, c2 = st.columns(2)
     with c1:
-        st.markdown('##### Sentiment Over Time (Volume)')
-        # Group by timestamp to simulate a time-series line chart
-        time_data = display_db.groupby('Timestamp').size()
-        st.line_chart(time_data, height=350, use_container_width=True)
+        st.markdown('**📊 Overall Sentiment Profile**')
+        sentiment_summary = display_db['Sentiment'].value_counts()
+        st.bar_chart(sentiment_summary, use_container_width=True)
 
     with c2:
-        st.markdown('##### Cross-Channel Distribution')
+        st.markdown('**📈 Cross-Channel Dist.**')
         chart_data = display_db.groupby(['Channel', 'Sentiment']).size().unstack(fill_value=0)
-        st.bar_chart(chart_data, height=350, use_container_width=True)
+        st.bar_chart(chart_data, use_container_width=True)
 
-    # Data Table Section
     st.markdown("---")
-    st.markdown('##### 🗄️ Unified Event Store (Raw Payload)')
+    st.markdown('**🗄️ Unified Event Store (Raw Data)**')
     st.dataframe(display_db, use_container_width=True, hide_index=True)
 
 else:
-    # Empty State placeholders mimicking the cards
+    # Empty State placeholders
     col1, col2, col3, col4 = st.columns(4)
-    with col1: render_argon_card("Total Traffic", "0", "📈", "bg-danger")
-    with col2: render_argon_card("Positive Feedback", "0", "👍", "bg-success")
-    with col3: render_argon_card("Negative Feedback", "0", "👎", "bg-warning")
-    with col4: render_argon_card("Neutral Mentions", "0", "💬", "bg-info")
-    st.info("Pipeline is currently idle. Awaiting data ingestion events from the sidebar.")
+    with col1: render_argon_card("Traffic", "0", "📈", "bg-danger")
+    with col2: render_argon_card("Positive", "0", "👍", "bg-success")
+    with col3: render_argon_card("Negative", "0", "👎", "bg-warning")
+    with col4: render_argon_card("Neutral", "0", "💬", "bg-info")
+    st.info("Pipeline is currently idle. Inject a data stream from the sidebar.")
